@@ -1,0 +1,262 @@
+┌─────────────────────────────────────────────────────────────────┐
+│                      STUDY SPAWN POINT                          │
+│                Gamified Learning Progress Tracker               │
+├──────────────────┬──────────────────┬───────────────────────────┤
+│   USER LAYER     │   DATA LAYER     │      LOGIC LAYER          │
+│  - Guest Access  │  - Struct Arrays │  - XP Calculation         │
+│  - Admin Access  │  - Text File DB  │  - Sort / Search          │
+│  - Registration  │  - XOR Encrypt   │  - Statistics             │
+│                  │                  │  - Top 3 Leaderboard      │
+└──────────────────┴──────────────────┴───────────────────────────┘
+
+ROLE HIERARCHY:
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   GUEST (role = 0)                                              │
+│   └── Read-only access                                         │
+│   └── Sees leaderboard with USERNAMES only                     │
+│   └── Cannot see real names of any student                     │
+│                                                                 │
+│   ADMIN / EDITOR (role = 1)                                     │
+│   └── Full CRUD access                                         │
+│   └── Sees leaderboard with USERNAMES                          │
+│   └── CAN see real full names of students                      │
+│   └── Requires access key to register                          │
+│                                                                 │
+│   STUDENT (role = 2)  ← NEW ROLE                               │
+│   └── Can add/view their OWN records only                      │
+│   └── Sees leaderboard with USERNAMES only                     │
+│   └── Cannot see other students' real names                    │
+│   └── Has a real full name stored in their profile             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+NOTE ON NAMING:
+  "Admin" and "Editor" are used interchangeably here.
+  The role that can see real names = ADMIN/EDITOR (role = 1)
+  The role that owns study records = STUDENT (role = 2)
+  Guests are unregistered viewers (role = 0)
+
+STRUCT HIERARCHY:
+│
+├── UserAccount
+│     ├── userID          (int)
+│     ├── username        (char[])   ← PUBLIC, shown on leaderboard
+│     ├── fullName        (char[])   ← PRIVATE, admin-only visible
+│     ├── password        (char[])   ← XOR encrypted
+│     └── role            (int)      ← 0=guest, 1=admin, 2=student
+│
+└── StudyRecord
+      ├── recordID        (int)
+      ├── ownerUsername   (char[])   ← links record to student
+      ├── subject         (char[])
+      ├── hoursStudied    (float)
+      ├── xpEarned        (int)      ← calculated from hours
+      └── date            (char[])
+
+/* ─── User Account Struct ─── */
+typedef struct {
+    int     userID;
+    char    username[MAX_USERNAME];     /* public display name    */
+    char    fullName[MAX_FULLNAME];     /* private, admin-only    */
+    char    password[MAX_PASSWORD];     /* XOR encrypted          */
+    int     role;                       /* 0=guest 1=admin 2=stud */
+} UserAccount;
+
+/* ─── Study Record Struct ─── */
+typedef struct {
+    int     recordID;
+    char    ownerUsername[MAX_USERNAME];
+    char    subject[MAX_SUBJECT];
+    float   hoursStudied;
+    int     xpEarned;
+    char    date[MAX_DATE];
+} StudyRecord;
+
+/* ─── Leaderboard Entry Struct ─── */
+/* Built at runtime, NOT stored in file */
+typedef struct {
+    char    username[MAX_USERNAME];     /* always shown           */
+    char    fullName[MAX_FULLNAME];     /* shown only to admin    */
+    int     totalXP;
+    int     rank;                       /* 1, 2, or 3             */
+} LeaderboardEntry;
+
+LEADERBOARD CONSTRUCTION (runtime, not stored):
+
+STEP 1: Aggregate XP per student username
+        → loop through StudyRecord[]
+        → sum xpEarned grouped by ownerUsername
+
+STEP 2: Match username to UserAccount[]
+        → retrieve fullName (for admin display)
+        → confirm role == STUDENT (role = 2)
+        → guests and admins are excluded
+
+STEP 3: Sort aggregated results by totalXP (descending)
+        → selection sort on LeaderboardEntry[]
+
+STEP 4: Take top 3 entries
+        → assign rank 1, 2, 3
+
+STEP 5: Display based on viewer's role
+        → GUEST / STUDENT → show username only
+        → ADMIN / EDITOR  → show username + full name
+
+WHAT GUEST / STUDENT SEES:
+┌─────────────────────────────────────────────┐
+│           🏆  TOP 3 STUDENTS  🏆            │
+├──────┬──────────────────┬───────────────────┤
+│ RANK │    USERNAME      │    TOTAL XP       │
+├──────┼──────────────────┼───────────────────┤
+│  #1  │  SpawnMaster99   │    4,250 XP       │
+│  #2  │  StudyKing07     │    3,800 XP       │
+│  #3  │  NightOwlCoder   │    3,100 XP       │
+└──────┴──────────────────┴───────────────────┘
+
+WHAT ADMIN / EDITOR SEES:
+┌──────────────────────────────────────────────────────────────┐
+│                   🏆  TOP 3 STUDENTS  🏆                     │
+├──────┬──────────────────┬──────────────────┬─────────────────┤
+│ RANK │    USERNAME      │   FULL NAME      │   TOTAL XP      │
+├──────┼──────────────────┼──────────────────┼─────────────────┤
+│  #1  │  SpawnMaster99   │  Juan dela Cruz  │   4,250 XP      │
+│  #2  │  StudyKing07     │  Maria Santos    │   3,800 XP      │
+│  #3  │  NightOwlCoder   │  Pedro Reyes     │   3,100 XP      │
+└──────┴──────────────────┴──────────────────┴─────────────────┘
+
+TIE-BREAKING:
+  If two students have equal totalXP:
+    → The student with MORE total hours studied ranks higher
+    → If still tied → earlier registration (lower userID) ranks higher
+
+  This ensures deterministic ranking at all times.
+
+EDGE CASES TO HANDLE:
+┌──────────────────────────────────────────────────────────────┐
+│ 1. Fewer than 3 students exist                               │
+│    → Show only available ranks (e.g., only Top 1 or Top 2)  │
+│                                                              │
+│ 2. Student has no study records yet                          │
+│    → totalXP = 0, still eligible but ranks last             │
+│    → Only show students with at least 1 record              │
+│                                                              │
+│ 3. Admin/Guest accounts in UserAccount[]                     │
+│    → Filter by role == STUDENT before building leaderboard  │
+│                                                              │
+│ 4. Deleted records affect leaderboard                        │
+│    → Leaderboard is always rebuilt from current records[]   │
+│    → No stale cached data                                    │
+└──────────────────────────────────────────────────────────────┘
+
+FULL NAME VISIBILITY RULES:
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  fullName is stored in UserAccount struct for STUDENTS only  │
+│                                                              │
+│  WHO CAN SEE fullName:                                       │
+│    ✓ Admin/Editor — in leaderboard, in user management      │
+│    ✗ Guest        — never shown                             │
+│    ✗ Student      — can only see their OWN full name        │
+│                     (in their own profile view)             │
+│                                                              │
+│  WHERE fullName IS NEVER SHOWN:                              │
+│    ✗ Leaderboard (for non-admin viewers)                    │
+│    ✗ Study record listings (for non-admin viewers)          │
+│    ✗ Search results (for non-admin viewers)                 │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────┬───────┬───────┬─────────┐
+│          FUNCTION            │ GUEST │ STUD  │  ADMIN  │
+├──────────────────────────────┼───────┼───────┼─────────┤
+│ View Top 3 Leaderboard       │  ✓    │  ✓    │   ✓     │
+│ See usernames on leaderboard │  ✓    │  ✓    │   ✓     │
+│ See full names on leaderboard│  ✗    │  ✗    │   ✓     │
+│ View own study records       │  —    │  ✓    │   ✓     │
+│ View ALL study records       │  ✓*   │  ✗    │   ✓     │
+│ Search records               │  ✓    │  ✓    │   ✓     │
+│ View statistics (own)        │  —    │  ✓    │   ✓     │
+│ View statistics (all)        │  ✗    │  ✗    │   ✓     │
+│ Add study record             │  ✗    │  ✓    │   ✓     │
+│ Edit study record            │  ✗    │  ✗    │   ✓     │
+│ Delete study record          │  ✗    │  ✗    │   ✓     │
+│ Sort records                 │  ✗    │  ✗    │   ✓     │
+│ Reset own password           │  ✗    │  ✓    │   ✓     │
+│ Reset any password           │  ✗    │  ✗    │   ✓     │
+│ View student full names      │  ✗    │  ✗    │   ✓     │
+│ Manage user accounts         │  ✗    │  ✗    │   ✓     │
+└──────────────────────────────┴───────┴───────┴─────────┘
+  * Guests see records but ownerUsername shown, not full name
+
+ENCRYPTED FIELDS:
+┌──────────────────────────────────────────────────────────────┐
+│  password  → XOR encrypted before writing to file           │
+│  fullName  → XOR encrypted before writing to file           │
+│             (extra privacy layer for student real names)    │
+│                                                              │
+│  username  → stored in plaintext (public identifier)        │
+│  role      → stored as integer (not sensitive)              │
+│  subject   → stored in plaintext (not sensitive)            │
+└──────────────────────────────────────────────────────────────┘
+
+FOR PASSWORD ENCRYPTION:
+  key = username + MASTER_KEY_CHAR
+
+FOR FULL NAME ENCRYPTION:
+  key = username + password + MASTER_KEY_CHAR
+  (stronger key since fullName is more sensitive)
+
+ENCRYPTION FORMULA:
+  encrypted[i] = plaintext[i] XOR key[i % keyLen]
+
+DECRYPTION:
+  Same function — XOR is self-inverse
+  Only admin can trigger fullName decryption display
+
+FILES:
+├── users.txt      ← UserAccount records
+└── records.txt    ← StudyRecord records
+
+users.txt FORMAT (per line):
+userID|username|encryptedFullName|encryptedPassword|role
+
+EXAMPLE:
+1|SpawnMaster99|%#@$^&*!|#$%^&*()|2
+2|AdminUser|||||1
+(fullName field empty or placeholder for non-students)
+
+records.txt FORMAT (per line):
+recordID|ownerUsername|subject|hoursStudied|xpEarned|date
+
+EXAMPLE:
+1|SpawnMaster99|Mathematics|2.5|275|2025-06-15
+2|SpawnMaster99|Physics|1.0|100|2025-06-16
+3|StudyKing07|Chemistry|3.0|350|2025-06-15
+
+LOADING:
+  fopen(READ) → parse line by line with fgets
+  → tokenize with strtok (delimiter = '|')
+  → populate struct arrays
+  → decrypt fullName and password in memory only
+  → fclose
+
+SAVING:
+  fopen(WRITE) → overwrite entire file
+  → encrypt fullName and password before writing
+  → fprintf each struct
+  → fclose
+
+SECURITY NOTE:
+  Decrypted fullName and password exist ONLY in RAM
+  during program execution. File always stores encrypted.
+
+TIERED XP SYSTEM:
+┌──────────────────┬──────────────┬──────────────────────────────┐
+│  Hours Studied   │  Base XP/hr  │  Bonus                       │
+├──────────────────┼──────────────┼──────────────────────────────┤
+│  0.1 – 0.9 hrs   │     50 XP    │  none                        │
+│  1.0 – 1.9 hrs   │     75 XP    │  +25 flat bonus              │
+│  2.0 – 3.9 hrs   │    100 XP    │  +50 flat bonus              │
+│  4.0+ hrs        │    100 XP    │  +100 flat bonus             │
+└──────────────────┴──────────────┴──────
