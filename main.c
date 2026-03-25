@@ -2,23 +2,27 @@
 
 int main() {
 
-    int choice; //container for user choice
+    int choice = 0; //container for user choice
     char bool_choice; //container for continue choice
-    int sesh_choice;
-    int max_choice = 4; //container for max amount of choices in program
+    int sesh_choice = 0;
+    int admin_choice = 0;
+    int max_choice = 3; //container for max amount of choices in program
 
+    int user_type = 0; //0 for guest, 1 for admin, 2 for user
+    //NOTE: user_type should be in struct so this is placeholder only for logic
     int user_count = 0; //container for user count for database
+    int admin_count = 0;
     int sesh_count = 0;
+    int verify_val = 0; //to store the return val of verify func
+    int create_val = 0;//to store the return val of create_acc func
 
     do //do while that runs until user doesnt want to go back to menu
     {
         do { //do while that runs until user inputs a valid input
-            /* code */
             printf("Welcome to Study Spawn Point!\n");
             printf("[1] - Sign in\n");
             printf("[2] - Create an Account\n");
-            printf("[3] - Account List\n");
-            printf("[4] - Exit\n");
+            printf("[3] - Exit\n");
             printf("Enter Choice: ");
             scanf("%d", &choice);
 
@@ -31,33 +35,79 @@ int main() {
             switch (choice)
             {
                 case 1: //case for signing in
-                    signin(temp); //stores in temp array
-                    verify(credentials, temp, user_count); //verifies info in temp array to credentials array (see funcs.c for structs)
-                    if(verify(credentials, temp, user_count) == 0) {
-                        do {
-                            printf("[1] - Input a New Session\n");
-                            printf("[2] - Session List\n");
-                            scanf("%d", &sesh_choice);
+                    signin(temp); //stores in temp struct
+                    verify_val = verify(credentials, temp, admin_creds, user_count, admin_count);
+                    
+                    switch(verify_val) {
+                        case 1:
+                            do {
+                                printf("Admin Menu\n");
+                                printf("[1] - Account List\n");
+                                printf("[2] - Edit Records\n");
+                                printf("[3] - Sign Out\n");
+                                printf("Enter Choice: ");
+                                scanf("%d", &admin_choice);
+                                
+                                switch (admin_choice)
+                                {
+                                case 1:
+                                    /* code */
+                                    acc_list(credentials, KEY, user_count);
+                                    break;
 
-                            if(sesh_choice == 1)
-                                input_sesh(sesh, &sesh_count);
-                            
-                            else if(sesh_choice == 2)
-                                sesh_printer(sesh, sesh_count);
+                                case 2:
+                                    printf("edit records lol");//placeholder
+                                    break;
+                                
+                                default:
+                                    break;
+                                }
 
-                            else
-                                printf("Invalid input, please try again.");
-                        } while(sesh_choice != 1 || sesh_choice != 2); 
+                                if(admin_choice != 1 && admin_choice != 2 && admin_choice != 3)
+                                    printf("Invalid input, please try again.");
+
+                            } while(admin_choice != 1 && admin_choice != 2 && admin_choice != 3);
+                        
+                            break;
+
+                        case 2:
+                            do {
+                                printf("Ready to Start?\n");
+                                printf("[1] - Input a New Session\n");
+                                printf("[2] - Session List\n");
+                                printf("[3] - Sign Out\n");
+                                printf("Enter Choice: ");
+                                scanf("%d", &sesh_choice);
+
+                                switch(sesh_choice) {
+
+                                    case 1:
+                                        input_sesh(sesh, &sesh_count);
+
+                                    case 2:
+                                        sesh_printer(sesh, sesh_count);
+
+                                    default:
+                                        break;
+                                }
+
+                                if(sesh_choice != 1 && sesh_choice != 2 && sesh_choice != 3)
+                                    printf("Invalid input, please try again.");
+
+                            } while(sesh_choice != 1 && sesh_choice != 2 && sesh_choice != 3); 
+
+                            break;
+
+                        default:
+                            break;
                     }
+                        
                     break;
 
                 case 2: //case for creating account
-                    create_acc(credentials, &user_count);
+                    create_acc(credentials, admin_creds, &user_count, &admin_count);     
                     break;
 
-                case 3: //case for showing list of accounts created
-                    acc_list(credentials, user_count);
-        
                 default:
                     break;
             }
@@ -77,7 +127,7 @@ int main() {
         else //else statement if user chooses to exit program
             printf("\nExiting program...\n\n");
         
-    } while(bool_choice == 'y' || bool_choice == 'Y' && choice != max_choice);
+    } while(bool_choice == 'y' || bool_choice == 'Y' || bool_choice == 'n' || bool_choice == 'N' && choice != max_choice);
 
     return 0;
 
