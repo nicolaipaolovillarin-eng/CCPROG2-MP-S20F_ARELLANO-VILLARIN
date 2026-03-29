@@ -428,8 +428,6 @@ void buildLeaderboard(UserAccount users[], int userCount,
         strncpy(leaderboard[*leaderboardCount].username, users[i].username, MAX - 1);
         unsigned char tempName[MAX_FULLNAME]; 
 
-        unsigned char tempName[MAX_FULLNAME];
-
         strncpy((char *)tempName, (char *)users[i].fullName, MAX_FULLNAME - 1);
 
         char nameKey[MAX + 2];
@@ -560,18 +558,19 @@ void acc_list(UserAccount users[], int userCount, int viewerRole) {
         printf("Account %d:\n", i + 1);
         printf("User ID  : %d\n", users[i].userID);
         printf("Username : %s\n", users[i].username);
-
-        if (viewerRole == ROLE_ADMIN) {
-
+        
+        if (viewerRole == ROLE_ADMIN && users[i].role == ROLE_STUDENT) {
             unsigned char tempName[MAX_FULLNAME];
             strncpy((char *)tempName, (char *)users[i].fullName, MAX_FULLNAME - 1);
-
-            char nameKey[MAX * 2 + 2];
-            snprintf(nameKey, sizeof(nameKey), "%s%s%c", users[i].username, (char *)users[i].password, MASTER_KEY);
+            
+            char nameKey[MAX + 2];
+            snprintf(nameKey, sizeof(nameKey), "%s%c",
+                users[i].username, MASTER_KEY);
             encrypt_decrypt(tempName, users[i].fullName_len, nameKey);
-
+            
             printf("Full Name: %s\n", tempName);
         }
+    }
 
         printf("Role     : ");
 
