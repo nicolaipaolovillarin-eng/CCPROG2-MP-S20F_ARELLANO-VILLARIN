@@ -73,7 +73,9 @@ void loadUsers(UserAccount users[], int *userCount) {
     char line[512];
     *userCount = 0;
 
-    while (fgets(line, sizeof(line), fp) != NULL && *userCount < MAX_USERS) {
+while (fgets(line, sizeof(line), fp) != NULL && *userCount < MAX_USERS) {
+
+        line[strcspn(line, "\n")] = '\0';
 
         char *token;
 
@@ -169,10 +171,11 @@ void loadRecords(StudyRecord records[], int *recordCount) {
     char line[512];
     *recordCount = 0;
 
-    while (fgets(line, sizeof(line), fp) != NULL && *recordCount < MAX_RECORDS) {
+while (fgets(line, sizeof(line), fp) != NULL && *recordCount < MAX_RECORDS) {
+
+        line[strcspn(line, "\n")] = '\0';
 
         char *token;
-
         token = strtok(line, "|");
         if (token == NULL) continue;
         records[*recordCount].recordID = atoi(token);
@@ -422,10 +425,15 @@ void buildLeaderboard(UserAccount users[], int userCount,
         if (recordFound == 0)
             continue;
 
-        strncpy(leaderboard[*leaderboardCount].username,
-                users[i].username, MAX - 1);
-        strncpy(leaderboard[*leaderboardCount].fullName,
-                (char *)users[i].fullName, MAX_FULLNAME - 1);
+        strncpy(leaderboard[*leaderboardCount].username, users[i].username, MAX - 1);
+        unsigned char tempName[MAX_FULLNAME]; 
+        
+        strncpy((char *)tempName, (char *)users[i].fullName, MAX_FULLNAME - 1);
+        char nameKey[MAX * 2 + 2];
+        snprintf(nameKey, sizeof(nameKey), "%s%s%c", users[i].username, (char *)users[i].password, MASTER_KEY);
+        encrypt_decrypt(tempName, users[i].fullName_len, nameKey);
+        
+        strncpy(leaderboard[*leaderboardCount].fullName, (char *)tempName, MAX_FULLNAME - 1);
 
         leaderboard[*leaderboardCount].totalXP = totalXP;
         leaderboard[*leaderboardCount].totalHours = totalHours;
@@ -471,18 +479,6 @@ void buildLeaderboard(UserAccount users[], int userCount,
     for (int i = 0; i < *leaderboardCount; i++)
         leaderboard[i].rank = i + 1;
 }
-
-/*
-
-    @name   displayLeaderboard()
-
-    @brief  Displays the top students in the leaderboard.
-            Admins see username, full name, and total XP.
-            Guests and students see username and total XP only
-
-    @param  leaderboard         Array of LeaderboardEntry structs
-    @param  leaderboardCount    Number of leaderboard entries
-    @param  viewerRole          Role of the viewer
 
 /*
 
@@ -567,8 +563,8 @@ void acc_list(UserAccount users[], int userCount, int viewerRole) {
             unsigned char tempName[MAX_FULLNAME];
             strncpy((char *)tempName, (char *)users[i].fullName, MAX_FULLNAME - 1);
 
-            char nameKey[MAX + 2];
-            snprintf(nameKey, sizeof(nameKey), "%s%c", users[i].username, MASTER_KEY);
+            char nameKey[MAX * 2 + 2];
+            snprintf(nameKey, sizeof(nameKey), "%s%s%c", users[i].username, (char *)users[i].password, MASTER_KEY);
             encrypt_decrypt(tempName, users[i].fullName_len, nameKey);
 
             printf("Full Name: %s\n", tempName);
