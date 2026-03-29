@@ -106,15 +106,22 @@ void calculateStats(StudyRecord records[], int recordCount, const char *username
                     float *totalHours, float *avgHours, int *totalXP);
 
 /* ─── Sort and Search Functions ─── */
-void selectionSortBySubject(StudyRecord records[], int recordCount);
+// subjectNames[][] is a 2D array extracted from StudyRecord[]
+// used as the primary structure for sorting and searching
+void extractSubjectNames(StudyRecord records[], int recordCount,
+                         char subjectNames[][MAX_SUBJECT]);
+void selectionSortBySubject(StudyRecord records[], int recordCount,
+                            char subjectNames[][MAX_SUBJECT]);
 void selectionSortByXP(StudyRecord records[], int recordCount);
-int  binarySearchBySubject(StudyRecord records[], int recordCount, const char *subject);
+int  binarySearchBySubject(char subjectNames[][MAX_SUBJECT], int recordCount,
+                           const char *subject);
 
 /* ─── Leaderboard Functions ─── */
 void buildLeaderboard(UserAccount users[], int userCount,
                       StudyRecord records[], int recordCount,
                       LeaderboardEntry leaderboard[], int *leaderboardCount);
-void displayLeaderboard(LeaderboardEntry leaderboard[], int leaderboardCount, int viewerRole);
+void displayLeaderboard(LeaderboardEntry leaderboard[], int leaderboardCount,
+                        int viewerRole);
 
 /* ─── Display Functions ─── */
 void acc_list(UserAccount users[], int userCount, int viewerRole);
