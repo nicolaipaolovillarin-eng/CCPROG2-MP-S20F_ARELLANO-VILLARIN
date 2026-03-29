@@ -27,10 +27,11 @@ int main() {
     int choice = 0;
     int menuChoice = 0;
     char backChoice = 'n';
-
+    
     int editID = 0;
     int deleteID = 0;
     int resetIndex = 0;
+    int resetFound = 0;
     int sortChoice = 0;
     int searchResult = 0;
     char searchSubject[MAX_SUBJECT];
@@ -164,7 +165,7 @@ int main() {
                                  acc_list(users, userCount, ROLE_ADMIN);
                                  printf("Enter User ID to reset password: ");
                                  scanf("%d", &resetIndex);
-                                 int resetFound = 0;
+                                 resetFound = 0;
                                  for (int i = 0; i < userCount; i++) {
                                      if (users[i].userID == resetIndex) {
                                          reset_password(users, userCount, i, ADMIN_KEY);
