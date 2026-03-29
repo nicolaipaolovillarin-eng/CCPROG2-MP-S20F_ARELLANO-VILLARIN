@@ -365,12 +365,11 @@ int create_acc(UserAccount users[], int *userCount) {
                  users[*userCount].username, MASTER_KEY);
         encrypt_decrypt(users[*userCount].password,
                         users[*userCount].pass_len, passKey);
-
-        char nameKey[MAX * 2 + 2];
-        snprintf(nameKey, sizeof(nameKey), "%s%s%c",
-                 users[*userCount].username, tempPass, MASTER_KEY);
+        char nameKey[MAX + 2];
+        snprintf(nameKey, sizeof(nameKey), "%s%c",
+            users[*userCount].username, MASTER_KEY);
         encrypt_decrypt(users[*userCount].fullName,
-                        users[*userCount].fullName_len, nameKey);
+            users[*userCount].fullName_len, nameKey);
 
         users[*userCount].role = ROLE_STUDENT;
         users[*userCount].userID = *userCount + 1;
