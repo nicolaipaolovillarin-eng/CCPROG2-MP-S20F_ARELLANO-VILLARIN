@@ -427,12 +427,15 @@ void buildLeaderboard(UserAccount users[], int userCount,
 
         strncpy(leaderboard[*leaderboardCount].username, users[i].username, MAX - 1);
         unsigned char tempName[MAX_FULLNAME]; 
-        
+
+        unsigned char tempName[MAX_FULLNAME];
+
         strncpy((char *)tempName, (char *)users[i].fullName, MAX_FULLNAME - 1);
-        char nameKey[MAX * 2 + 2];
-        snprintf(nameKey, sizeof(nameKey), "%s%s%c", users[i].username, (char *)users[i].password, MASTER_KEY);
+
+        char nameKey[MAX + 2];
+
+        snprintf(nameKey, sizeof(nameKey), "%s%c", users[i].username, MASTER_KEY);
         encrypt_decrypt(tempName, users[i].fullName_len, nameKey);
-        
         strncpy(leaderboard[*leaderboardCount].fullName, (char *)tempName, MAX_FULLNAME - 1);
 
         leaderboard[*leaderboardCount].totalXP = totalXP;
