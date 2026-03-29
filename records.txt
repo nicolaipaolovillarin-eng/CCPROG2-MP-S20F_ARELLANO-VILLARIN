@@ -1,0 +1,10 @@
+1|student1|Mathematics|1.50|137|1|15|2025
+2|student1|Physics|2.00|250|1|16|2025
+3|student1|Chemistry|3.50|400|1|17|2025
+4|student2|Mathematics|0.50|25|1|15|2025
+5|student2|Biology|4.00|500|1|18|2025
+6|student2|History|1.00|100|1|20|2025
+7|student3|Mathematics|2.50|300|1|14|2025
+8|student3|English|1.50|137|1|19|2025
+9|student3|Physics|5.00|600|1|21|2025
+10|admin1|Chemistry|3.00|350|1|22|2025
