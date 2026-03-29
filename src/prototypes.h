@@ -18,21 +18,16 @@
 #include <stdlib.h>
 
 /* Size Constants */
-#define MAX 100
-#define MAXNAME 50
-#define MAXDAY 32
-
+#define MAX          100
 #define MAX_FULLNAME 100
 #define MAX_SUBJECT  50
-#define MAX_DATE     12
 #define MAX_USERS    100
 #define MAX_RECORDS  1000
 #define MAX_LB       3
 
 /* Key Constants */
-#define KEY            "study"
-#define ADMIN_KEY      "admin_123"
-#define MASTER_KEY     '!'
+#define ADMIN_KEY    "admin_123"
+#define MASTER_KEY   '!'
 
 /* Role Constants */
 #define ROLE_GUEST   0
