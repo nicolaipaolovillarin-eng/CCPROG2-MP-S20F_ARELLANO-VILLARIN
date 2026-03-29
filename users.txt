@@ -1,0 +1,5 @@
+1|admin1||adminpass|9|0|1
+2|admin2||adminpass|9|0|1
+3|student1|JuandelaCruz|student1pass|12|11|2
+4|student2|MariaSantos|student2pass|12|10|2
+5|student3|JoseReyes|student3pass|12|9|2
