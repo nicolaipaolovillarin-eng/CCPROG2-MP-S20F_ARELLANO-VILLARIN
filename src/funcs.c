@@ -130,16 +130,29 @@ void listRecords(StudyRecord records[], int recordCount, int viewerRole,
             strcmp(records[i].ownerUsername, filterUsername) != 0)
             continue;
 
-        printf("Record ID  : %d\n", records[i].recordID);
-        printf("Owner      : %s\n", records[i].ownerUsername);
-        printf("Subject    : %s\n", records[i].subject);
-        printf("Hours      : %.2f\n", records[i].hoursStudied);
-        printf("XP Earned  : %d\n", records[i].xpEarned);
-        printf("Date       : %02d/%02d/%04d\n",
-               records[i].session_date.month,
-               records[i].session_date.day,
-               records[i].session_date.year);
-        printf("\n");
+        // Admin and Student see full record details
+        if (viewerRole == ROLE_ADMIN || viewerRole == ROLE_STUDENT) {
+
+            printf("Record ID  : %d\n", records[i].recordID);
+            printf("Owner      : %s\n", records[i].ownerUsername);
+            printf("Subject    : %s\n", records[i].subject);
+            printf("Hours      : %.2f\n", records[i].hoursStudied);
+            printf("XP Earned  : %d\n", records[i].xpEarned);
+            printf("Date       : %02d/%02d/%04d\n",
+                   records[i].session_date.month,
+                   records[i].session_date.day,
+                   records[i].session_date.year);
+            printf("\n");
+        }
+
+        // Guest sees limited record details
+        else if (viewerRole == ROLE_GUEST) {
+
+            printf("Record ID  : %d\n", records[i].recordID);
+            printf("Owner      : %s\n", records[i].ownerUsername);
+            printf("Subject    : %s\n", records[i].subject);
+            printf("\n");
+        }
 
         found++;
     }
