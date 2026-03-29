@@ -72,8 +72,8 @@ void loadUsers(UserAccount users[], int *userCount) {
 
     char line[512];
     *userCount = 0;
-
-while (fgets(line, sizeof(line), fp) != NULL && *userCount < MAX_USERS) {
+    
+    while (fgets(line, sizeof(line), fp) != NULL && *userCount < MAX_USERS) {
 
         line[strcspn(line, "\n")] = '\0';
 
@@ -170,8 +170,8 @@ void loadRecords(StudyRecord records[], int *recordCount) {
 
     char line[512];
     *recordCount = 0;
-
-while (fgets(line, sizeof(line), fp) != NULL && *recordCount < MAX_RECORDS) {
+    
+    while (fgets(line, sizeof(line), fp) != NULL && *recordCount < MAX_RECORDS) {
 
         line[strcspn(line, "\n")] = '\0';
 
