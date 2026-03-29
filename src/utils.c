@@ -570,7 +570,7 @@ void acc_list(UserAccount users[], int userCount, int viewerRole) {
             
             printf("Full Name: %s\n", tempName);
         }
-    }
+    
 
         printf("Role     : ");
 
