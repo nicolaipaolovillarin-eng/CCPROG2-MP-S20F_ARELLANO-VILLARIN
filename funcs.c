@@ -8,12 +8,14 @@ void signin(user_info user_sn[]) { //this needs to scan for all user and pass in
 
         printf("Enter password: ");
         scanf("%s", user_sn[0].password);
+        user_sn[0].pass_len = strlen(user_sn[0].password);
 }
 
 int create_acc(user_info user[], user_info admin[], int *user_count, int *admin_count) {
     char admin_choice;
     int acc_type = 0;
-    int return_val;
+    int dupe_admin = 0;
+    int dupe_user = 0;
     printf("\nCreate an Account!\n\n");
 
     do {
@@ -29,16 +31,26 @@ int create_acc(user_info user[], user_info admin[], int *user_count, int *admin_
         scanf("%s", key_input);
 
         if(strcmp(key_input, ADMIN_KEY) == 0) {
-            printf("\nAccess Granted!\n\n");
+            printf("\nAdmin Access Granted!\n\n");
             printf("Enter username: ");
             scanf("%s", admin[*admin_count].username);
 
-            printf("Enter password: ");
-            scanf("%s", admin[*admin_count].password);
-            admin[*admin_count].pass_len = strlen(admin[*admin_count].password);
-            encrypt_decrypt(&admin[*admin_count], KEY, 1, admin[*admin_count].pass_len);
+            for(int i = 0; i < *admin_count; i++){
+                if(strcmp(admin[i].username, admin[*admin_count].username) == 0)
+                    dupe_admin++;
+            }
+        
+            if(dupe_admin > 0)
+                    printf("Username already exists. Enter a different one.\n\n");
 
-            (*admin_count)++;
+            else {
+                printf("Enter password: ");
+                scanf("%s", admin[*admin_count].password);
+                admin[*admin_count].pass_len = strlen(admin[*admin_count].password);
+                encrypt_decrypt(&admin[*admin_count], KEY, 1, admin[*admin_count].pass_len);
+
+                (*admin_count)++;
+            }
         }
 
         else
@@ -47,17 +59,27 @@ int create_acc(user_info user[], user_info admin[], int *user_count, int *admin_
     
     else {
         acc_type = 2;
-        printf("Enter username: ");
+        printf("\nEnter username: ");
         scanf("%s", user[*user_count].username);
 
-        printf("Enter password: ");
-        scanf("%s", user[*user_count].password);
-        user[*user_count].pass_len = strlen(user[*user_count].password);
-        encrypt_decrypt(&user[*user_count], KEY, 1, user[*user_count].pass_len);
+        for(int i = 0; i < *user_count; i++){
+            if(strcmp(admin[i].username, admin[*admin_count].username) == 0)
+                    dupe_user++;
+            }
 
-        printf("Account created! Go back to the menu to login your new account!\n\n");
+        if(dupe_user > 0)
+            printf("Username already exists. Enter a different one.\n\n");
 
-        (*user_count)++;
+        else {
+            printf("Enter password: ");
+            scanf("%s", user[*user_count].password);
+            user[*user_count].pass_len = strlen(user[*user_count].password);
+            encrypt_decrypt(&user[*user_count], KEY, 1, user[*user_count].pass_len);
+
+            printf("Account created! Go back to the menu to login your new account!\n\n");
+
+            (*user_count)++;
+        }
     }
 
     return acc_type;
@@ -69,7 +91,7 @@ void encrypt_decrypt(user_info *user, char key[], int mode, int len) {
     for(int i = 0; i < len; i++) {
         if (mode == 1) { //encrypt mode
             int val = user->password[i] - 32; //shift to printable ASCII then turn it into an int
-            val = val ^ key[i % key_len]; //xor shift occurs
+            val = val ^ (key[i % key_len] % 95); //xor shift occurs
             val = (val + 67) % 95; //extra shift on top of xor
             user->password[i] = (unsigned char)(val + 32); //edits the char to the encrypted one
         }
@@ -77,7 +99,7 @@ void encrypt_decrypt(user_info *user, char key[], int mode, int len) {
         else { //decrypt mode
             int val = user->password[i] - 32; //same thing as first
             val = (val - 67 + 95) % 95; //reverse the extra shift but add 95 after in case of negative values
-            val = val ^ key[i % key_len]; //then xor shift again
+            val = val ^ (key[i % key_len] % 95); //then xor shift again
             user->password[i] = (unsigned char)(val + 32); //edits the char to the decrypted version
         }
     }
@@ -91,12 +113,14 @@ int verify(user_info user[], user_info temp[], user_info admin[], int user_count
      3 = acc in admin database but wrong pass, 4 = acc does not exist at all*/
     int found = 0; //0 means not found, 1 means found
 
+    encrypt_decrypt(&temp[0], KEY, 1, temp[0].pass_len);
+
     if(user_count == 0 && admin_count == 0) 
         printf("No account found in database. Create a new account.\n\n");
 
     else {
         for (int i = 0; i < admin_count && found == 0; i++) {
-            encrypt_decrypt(&admin[i], KEY, 0, admin[i].pass_len);
+            // encrypt_decrypt(&admin[i], KEY, 0, admin[i].pass_len);
             if (strcmp((char*)admin[i].username, (char*)temp[0].username) == 0) {
                 if (strcmp((char*)admin[i].password, (char*)temp[0].password) == 0) {
                     system("cls");
@@ -105,11 +129,11 @@ int verify(user_info user[], user_info temp[], user_info admin[], int user_count
                     found++;
                 }
             }
-            encrypt_decrypt(&admin[i], KEY, 1, admin[i].pass_len);
+            // encrypt_decrypt(&admin[i], KEY, 1, admin[i].pass_len);
         }
 
         for (int i = 0; i < user_count && found == 0; i++) {
-            encrypt_decrypt(&user[i], KEY, 0, user[i].pass_len);
+            // encrypt_decrypt(&user[i], KEY, 0, user[i].pass_len);
             if (strcmp((char*)user[i].username, (char*)temp[0].username) == 0) {
                 if (strcmp((char*)user[i].password, (char*)temp[0].password) == 0) {
                     system("cls");
@@ -118,7 +142,7 @@ int verify(user_info user[], user_info temp[], user_info admin[], int user_count
                     found++;
                 }
             }
-            encrypt_decrypt(&user[i], KEY, 1, user[i].pass_len);
+            // encrypt_decrypt(&user[i], KEY, 1, user[i].pass_len);
         }
 
         if(found == 0) {

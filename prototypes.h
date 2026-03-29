@@ -35,12 +35,6 @@ typedef struct
     date date_list[10];
 } study_sessions;
 
-user_info credentials[MAX]; //arrays of struct where each user into is stored
-user_info admin_creds[MAX];
-user_info temp[1]; //temp storage for a new user
-study_sessions sesh[MAXDAY]; //arrays of struct where no. of sessions is stored
-//NOTE: if the struct declarations count as global variables, these are to be moved in main.c
-
 void signin(user_info user_sn[]);
 int create_acc(user_info user[], user_info admin_creds[], int *user_count, int *admin_count);
 void encrypt_decrypt(user_info *user, char key[], int mode, int len);

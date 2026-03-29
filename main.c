@@ -2,6 +2,12 @@
 
 int main() {
 
+    user_info credentials[MAX]; //arrays of struct where each user into is stored
+    user_info admin_creds[MAX];
+    user_info temp[1]; //temp storage for a new user
+    study_sessions sesh[MAXDAY]; //arrays of struct where no. of sessions is stored
+    //NOTE: if the struct declarations count as global variables, these are to be moved in main.c
+
     int choice = 0; //container for user choice
     char bool_choice; //container for continue choice
     int sesh_choice = 0;
@@ -66,6 +72,15 @@ int main() {
                                 if(admin_choice != 1 && admin_choice != 2 && admin_choice != 3)
                                     printf("Invalid input, please try again.");
 
+                                // do {
+                                //     printf("Do you want to go back to the admin menu? Y/N ");
+                                //     scanf(" %c", &bool_choice);
+
+                                //     if(bool_choice != 'Y' && bool_choice != 'y' && bool_choice != 'n' && bool_choice != 'N')
+                                //         printf("Invalid input, please try again.\n\n");
+                                        
+                                // } while(bool_choice != 'Y' && bool_choice != 'y' && bool_choice != 'n' && bool_choice != 'N');
+
                             } while(admin_choice != 1 && admin_choice != 2 && admin_choice != 3);
                         
                             break;
@@ -83,9 +98,11 @@ int main() {
 
                                     case 1:
                                         input_sesh(sesh, &sesh_count);
+                                        break;
 
                                     case 2:
                                         sesh_printer(sesh, sesh_count);
+                                        break;
 
                                     default:
                                         break;
@@ -127,7 +144,7 @@ int main() {
         else //else statement if user chooses to exit program
             printf("\nExiting program...\n\n");
         
-    } while(bool_choice == 'y' || bool_choice == 'Y' || bool_choice == 'n' || bool_choice == 'N' && choice != max_choice);
+    } while(bool_choice == 'y' || bool_choice == 'Y'&& choice != max_choice);
 
     return 0;
 
