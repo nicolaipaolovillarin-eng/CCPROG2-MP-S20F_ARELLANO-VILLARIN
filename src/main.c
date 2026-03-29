@@ -68,7 +68,7 @@ int main() {
                     break;
 
                 if (users[loggedInIndex].role == ROLE_ADMIN) {
-
+                    backChoice = 'n';
                     do {
                         printf("\n=== Admin Menu ===\n");
                         printf("[1] - View All Records\n");
@@ -160,13 +160,22 @@ int main() {
                                 acc_list(users, userCount, ROLE_ADMIN);
                                 break;
 
-                            case 10:
-                                acc_list(users, userCount, ROLE_ADMIN);
-                                printf("Enter User ID to reset password: ");
-                                scanf("%d", &resetIndex);
-                                reset_password(users, userCount, resetIndex, ADMIN_KEY);
-                                saveUsers(users, userCount);
-                                break;
+                             case 10:
+                                 acc_list(users, userCount, ROLE_ADMIN);
+                                 printf("Enter User ID to reset password: ");
+                                 scanf("%d", &resetIndex);
+                                 int resetFound = 0;
+                                 for (int i = 0; i < userCount; i++) {
+                                     if (users[i].userID == resetIndex) {
+                                         reset_password(users, userCount, i, ADMIN_KEY);
+                                         saveUsers(users, userCount);
+                                         resetFound = 1;
+                                         break;
+                                     }
+                                 }
+                                 if (resetFound == 0)
+                                     printf("\nUser ID %d not found.\n\n", resetIndex);
+                                 break;
 
                             case 11:
                                 printf("\nSigning out...\n\n");
@@ -197,7 +206,7 @@ int main() {
                 }
 
                 else if (users[loggedInIndex].role == ROLE_STUDENT) {
-
+                    backChoice = 'n';
                     do {
                         printf("\n=== Student Menu ===\n");
                         printf("[1] - Add Study Record\n");
@@ -289,7 +298,7 @@ int main() {
                 break;
 
             case 3:
-
+                backChoice = 'n';
                 do {
                     printf("\n=== Guest Menu ===\n");
                     printf("[1] - View All Records\n");
