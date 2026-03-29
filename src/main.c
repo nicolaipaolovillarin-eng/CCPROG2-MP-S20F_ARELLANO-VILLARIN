@@ -7,7 +7,6 @@
 
     Main file for Study Spawn Point
     A Gamified Learning Progress Tracker
-    SDG 4 - Quality Education
 
 */
 
@@ -15,18 +14,30 @@
 
 int main() {
 
-    UserAccount   users[MAX_USERS];
-    StudyRecord   records[MAX_RECORDS];
+    UserAccount users[MAX_USERS];
+    StudyRecord records[MAX_RECORDS];
     LeaderboardEntry leaderboard[MAX_LB];
+    char subjectNames[MAX_RECORDS][MAX_SUBJECT];
 
-    int userCount       = 0;
-    int recordCount     = 0;
+    int userCount = 0;
+    int recordCount = 0;
     int leaderboardCount = 0;
-    int loggedInIndex   = -1;
+    int loggedInIndex = -1;
 
-    int choice       = 0;
-    int menuChoice   = 0;
-    char backChoice  = 'n';
+    int choice = 0;
+    int menuChoice = 0;
+    char backChoice = 'n';
+
+    int editID = 0;
+    int deleteID = 0;
+    int resetIndex = 0;
+    int sortChoice = 0;
+    int searchResult = 0;
+    char searchSubject[MAX_SUBJECT];
+
+    float totalHours = 0;
+    float avgHours = 0;
+    int totalXP = 0;
 
     loadUsers(users, &userCount);
     loadRecords(records, &recordCount);
@@ -60,15 +71,15 @@ int main() {
 
                     do {
                         printf("\n=== Admin Menu ===\n");
-                        printf("[1]  - View All Records\n");
-                        printf("[2]  - Add Record\n");
-                        printf("[3]  - Edit Record\n");
-                        printf("[4]  - Delete Record\n");
-                        printf("[5]  - View Leaderboard\n");
-                        printf("[6]  - View All Statistics\n");
-                        printf("[7]  - Sort Records\n");
-                        printf("[8]  - Search Records\n");
-                        printf("[9]  - Account List\n");
+                        printf("[1] - View All Records\n");
+                        printf("[2] - Add Record\n");
+                        printf("[3] - Edit Record\n");
+                        printf("[4] - Delete Record\n");
+                        printf("[5] - View Leaderboard\n");
+                        printf("[6] - View All Statistics\n");
+                        printf("[7] - Sort Records\n");
+                        printf("[8] - Search Records\n");
+                        printf("[9] - Account List\n");
                         printf("[10] - Reset a Password\n");
                         printf("[11] - Sign Out\n");
                         printf("Enter Choice: ");
@@ -92,8 +103,6 @@ int main() {
 
                             case 3:
                                 listRecords(records, recordCount, ROLE_ADMIN, NULL);
-
-                                int editID = 0;
                                 printf("Enter Record ID to edit: ");
                                 scanf("%d", &editID);
                                 editRecord(records, recordCount, editID);
@@ -102,8 +111,6 @@ int main() {
 
                             case 4:
                                 listRecords(records, recordCount, ROLE_ADMIN, NULL);
-
-                                int deleteID = 0;
                                 printf("Enter Record ID to delete: ");
                                 scanf("%d", &deleteID);
                                 deleteRecord(records, &recordCount, deleteID);
@@ -116,20 +123,20 @@ int main() {
                                 break;
 
                             case 6:
-                                calculateStats(records, recordCount, NULL, 
-                                               &(float){0}, &(float){0}, &(int){0});
+                                calculateStats(records, recordCount, NULL, &totalHours, &avgHours, &totalXP);
                                 break;
 
                             case 7:
-                                int sortChoice = 0;
                                 printf("\nSort by:\n");
                                 printf("[1] - Subject Name\n");
                                 printf("[2] - XP Earned\n");
                                 printf("Enter Choice: ");
                                 scanf("%d", &sortChoice);
 
-                                if (sortChoice == 1)
-                                    selectionSortBySubject(records, recordCount);
+                                if (sortChoice == 1) {
+                                    extractSubjectNames(records, recordCount, subjectNames);
+                                    selectionSortBySubject(records, recordCount, subjectNames);
+                                }
                                 else if (sortChoice == 2)
                                     selectionSortByXP(records, recordCount);
                                 else
@@ -137,11 +144,11 @@ int main() {
                                 break;
 
                             case 8:
-                                char searchSubject[MAX_SUBJECT];
-                                selectionSortBySubject(records, recordCount);
+                                extractSubjectNames(records, recordCount, subjectNames);
+                                selectionSortBySubject(records, recordCount, subjectNames);
                                 printf("Enter Subject to search: ");
                                 scanf("%49s", searchSubject);
-                                int searchResult = binarySearchBySubject(records, recordCount, searchSubject);
+                                searchResult = binarySearchBySubject(subjectNames, recordCount, searchSubject);
 
                                 if (searchResult == -1)
                                     printf("\nSubject not found.\n\n");
@@ -154,7 +161,6 @@ int main() {
                                 break;
 
                             case 10:
-                                int resetIndex = 0;
                                 acc_list(users, userCount, ROLE_ADMIN);
                                 printf("Enter User ID to reset password: ");
                                 scanf("%d", &resetIndex);
@@ -217,8 +223,7 @@ int main() {
                                 break;
 
                             case 2:
-                                listRecords(records, recordCount, ROLE_STUDENT,
-                                            users[loggedInIndex].username);
+                                listRecords(records, recordCount, ROLE_STUDENT, users[loggedInIndex].username);
                                 break;
 
                             case 3:
@@ -227,20 +232,15 @@ int main() {
                                 break;
 
                             case 4:
-                                float totalHours = 0;
-                                float avgHours   = 0;
-                                int   totalXP    = 0;
-                                calculateStats(records, recordCount,
-                                               users[loggedInIndex].username,
-                                               &totalHours, &avgHours, &totalXP);
+                                calculateStats(records, recordCount, users[loggedInIndex].username, &totalHours, &avgHours, &totalXP);
                                 break;
 
                             case 5:
-                                char searchSubject[MAX_SUBJECT];
-                                selectionSortBySubject(records, recordCount);
+                                extractSubjectNames(records, recordCount, subjectNames);
+                                selectionSortBySubject(records, recordCount, subjectNames);
                                 printf("Enter Subject to search: ");
                                 scanf("%49s", searchSubject);
-                                int searchResult = binarySearchBySubject(records, recordCount, searchSubject);
+                                searchResult = binarySearchBySubject(subjectNames, recordCount, searchSubject);
 
                                 if (searchResult == -1)
                                     printf("\nSubject not found.\n\n");
@@ -316,11 +316,11 @@ int main() {
                             break;
 
                         case 3:
-                            char searchSubject[MAX_SUBJECT];
-                            selectionSortBySubject(records, recordCount);
+                            extractSubjectNames(records, recordCount, subjectNames);
+                            selectionSortBySubject(records, recordCount, subjectNames);
                             printf("Enter Subject to search: ");
                             scanf("%49s", searchSubject);
-                            int searchResult = binarySearchBySubject(records, recordCount, searchSubject);
+                            searchResult = binarySearchBySubject(subjectNames, recordCount, searchSubject);
 
                             if (searchResult == -1)
                                 printf("\nSubject not found.\n\n");
