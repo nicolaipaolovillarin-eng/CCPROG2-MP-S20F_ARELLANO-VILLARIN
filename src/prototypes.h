@@ -1,19 +1,45 @@
+/*
+
+    === prototypes.h ===
+
+    Authors: Arellano, Lajon Travis Escalo
+             Villarin, Nicolai Paolo Balisado
+
+    Header file for Study Spawn Point
+    Contains all struct definitions, constants, and function prototypes
+
+*/
+
+#ifndef PROTOTYPES_H
+#define PROTOTYPES_H
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+/* ─── Size Constants ─── */
 #define MAX 100
 #define MAXNAME 50
 #define MAXDAY 32
-#define KEY "study"
-#define ADMIN_KEY "admin_123"
 
-typedef struct
-{
-    char username[MAX];
-    unsigned char password[MAX];
-    int pass_len;
-} user_info;
+#define MAX_FULLNAME 100
+#define MAX_SUBJECT  50
+#define MAX_DATE     12
+#define MAX_USERS    100
+#define MAX_RECORDS  1000
+#define MAX_LB       3
 
+/* ─── Key Constants ─── */
+#define KEY            "study"
+#define ADMIN_KEY      "admin_123"
+#define MASTER_KEY     '!'
+
+/* ─── Role Constants ─── */
+#define ROLE_GUEST   0
+#define ROLE_ADMIN   1
+#define ROLE_STUDENT 2
+
+/* ─── Date Struct ─── */
 typedef struct
 {
     int month;
@@ -21,25 +47,79 @@ typedef struct
     int year;
 } date;
 
+/* ─── User Account Struct ─── */
 typedef struct
 {
-    char sub_name[MAXNAME];
-    int sub_class[10]; //to check if sub is major or minor
-} subject;
+    int           userID;
+    char          username[MAX];
+    unsigned char fullName[MAX_FULLNAME];
+    unsigned char password[MAX];
+    int           pass_len;
+    int           fullName_len;
+    int           role;
+} UserAccount;
 
+/* ─── Study Record Struct ─── */
 typedef struct
 {
-    char sesh_name[MAX];
-    subject sub_list[10];
-    int sub_qty;
-    date date_list[10];
-} study_sessions;
+    int   recordID;
+    char  ownerUsername[MAX];
+    char  subject[MAX_SUBJECT];
+    float hoursStudied;
+    int   xpEarned;
+    date  session_date;
+} StudyRecord;
 
-void signin(user_info user_sn[]);
-int create_acc(user_info user[], user_info admin_creds[], int *user_count, int *admin_count);
-void encrypt_decrypt(user_info *user, char key[], int mode, int len);
-int verify(user_info user[], user_info temp[], user_info admin[], int user_count, int admin_count);
-void acc_list(user_info cred_list[], char key[], int user_count);
-void input_sub(study_sessions session[], int sesh_count);
-void input_sesh(study_sessions session[], int *sesh_count);
-void sesh_printer(study_sessions session[], int sesh_count);
+/* ─── Leaderboard Entry Struct ─── */
+typedef struct
+{
+    char  username[MAX];
+    char  fullName[MAX_FULLNAME];
+    int   totalXP;
+    float totalHours;
+    int   userID;
+    int   rank;
+} LeaderboardEntry;
+
+/* ─── Authentication Functions ─── */
+void signin(UserAccount users[], int userCount, int *loggedInIndex);
+int  create_acc(UserAccount users[], int *userCount);
+void encrypt_decrypt(unsigned char *field, int field_len, const char *key);
+int  verify(UserAccount users[], int userCount, const char *inputUsername, const char *inputPassword);
+int  reset_password(UserAccount users[], int userCount, int userIndex, const char *adminKey);
+
+/* ─── File Handling Functions ─── */
+void loadUsers(UserAccount users[], int *userCount);
+void saveUsers(UserAccount users[], int userCount);
+void loadRecords(StudyRecord records[], int *recordCount);
+void saveRecords(StudyRecord records[], int recordCount);
+
+/* ─── Study Record Functions ─── */
+void addRecord(StudyRecord records[], int *recordCount, UserAccount users[], int loggedInIndex);
+void editRecord(StudyRecord records[], int recordCount, int recordID);
+void deleteRecord(StudyRecord records[], int *recordCount, int recordID);
+void listRecords(StudyRecord records[], int recordCount, int viewerRole, const char *filterUsername);
+
+/* ─── Computation Functions ─── */
+int  calculateXP(float hoursStudied);
+void calculateStats(StudyRecord records[], int recordCount, const char *username,
+                    float *totalHours, float *avgHours, int *totalXP);
+
+/* ─── Sort and Search Functions ─── */
+void selectionSortBySubject(StudyRecord records[], int recordCount);
+void selectionSortByXP(StudyRecord records[], int recordCount);
+int  binarySearchBySubject(StudyRecord records[], int recordCount, const char *subject);
+
+/* ─── Leaderboard Functions ─── */
+void buildLeaderboard(UserAccount users[], int userCount,
+                      StudyRecord records[], int recordCount,
+                      LeaderboardEntry leaderboard[], int *leaderboardCount);
+void displayLeaderboard(LeaderboardEntry leaderboard[], int leaderboardCount, int viewerRole);
+
+/* ─── Display Functions ─── */
+void acc_list(UserAccount users[], int userCount, int viewerRole);
+
+/* ─── Utility Functions ─── */
+void clearStdin();
+
+#endif
