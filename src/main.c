@@ -14,37 +14,44 @@
 
 int main() {
 
+    // arrays to store all users, records, and leaderboard entries
     UserAccount users[MAX_USERS];
     StudyRecord records[MAX_RECORDS];
     LeaderboardEntry leaderboard[MAX_LB];
-    char subjectNames[MAX_RECORDS][MAX_SUBJECT];
+    char subjectNames[MAX_RECORDS][MAX_SUBJECT];  // 2D array for sort and search
 
+    // counters for each array
     int userCount = 0;
     int recordCount = 0;
     int leaderboardCount = 0;
-    int loggedInIndex = -1;
+    int loggedInIndex = -1;  // -1 means no user is logged in
 
+    // menu navigation variables
     int choice = 0;
     int menuChoice = 0;
-    char backChoice = 'n';
-    
-    int editID = 0;
-    int deleteID = 0;
-    int resetIndex = 0;
-    int resetFound = 0;
-    int sortChoice = 0;
-    int searchResult = 0;
-    char searchSubject[MAX_SUBJECT];
+    char backChoice = 'n';  // controls whether to go back to menu
 
+    // operation variables
+    int editID = 0;       // record ID to edit
+    int deleteID = 0;     // record ID to delete
+    int resetIndex = 0;   // user ID to reset password
+    int resetFound = 0;   // flag to check if user ID was found
+    int sortChoice = 0;   // sort option choice
+    int searchResult = 0; // index returned by binary search
+    char searchSubject[MAX_SUBJECT];  // subject name to search for
+
+    // statistics variables
     float totalHours = 0;
     float avgHours = 0;
     int totalXP = 0;
 
+    // load existing data from files on startup
     loadUsers(users, &userCount);
     loadRecords(records, &recordCount);
 
     do {
 
+        // main menu loop — keeps showing until valid input
         do {
             printf("Welcome to Study Spawn Point!\n");
             printf("[1] - Sign In\n");
@@ -62,14 +69,16 @@ int main() {
         switch (choice) {
 
             case 1:
-                loggedInIndex = -1;
+                loggedInIndex = -1;  // reset before signing in
                 signin(users, userCount, &loggedInIndex);
 
+                // if sign in failed, break out of case 1
                 if (loggedInIndex == -1)
                     break;
 
+                // admin menu
                 if (users[loggedInIndex].role == ROLE_ADMIN) {
-                    backChoice = 'n';
+                    backChoice = 'n';  // reset backChoice before entering menu
                     do {
                         printf("\n=== Admin Menu ===\n");
                         printf("[1] - View All Records\n");
@@ -94,15 +103,18 @@ int main() {
                         switch (menuChoice) {
 
                             case 1:
+                                // show all records to admin
                                 listRecords(records, recordCount, ROLE_ADMIN, NULL);
                                 break;
 
                             case 2:
+                                // add a new record and save immediately
                                 addRecord(records, &recordCount, users, loggedInIndex);
                                 saveRecords(records, recordCount);
                                 break;
 
                             case 3:
+                                // show all records then prompt for ID to edit
                                 listRecords(records, recordCount, ROLE_ADMIN, NULL);
                                 printf("Enter Record ID to edit: ");
                                 scanf("%d", &editID);
@@ -111,6 +123,7 @@ int main() {
                                 break;
 
                             case 4:
+                                // show all records then prompt for ID to delete
                                 listRecords(records, recordCount, ROLE_ADMIN, NULL);
                                 printf("Enter Record ID to delete: ");
                                 scanf("%d", &deleteID);
@@ -119,15 +132,18 @@ int main() {
                                 break;
 
                             case 5:
+                                // build and display leaderboard for admin
                                 buildLeaderboard(users, userCount, records, recordCount, leaderboard, &leaderboardCount);
                                 displayLeaderboard(leaderboard, leaderboardCount, ROLE_ADMIN);
                                 break;
 
                             case 6:
+                                // show statistics for all students
                                 calculateStats(records, recordCount, NULL, &totalHours, &avgHours, &totalXP);
                                 break;
 
                             case 7:
+                                // sort records by subject or XP
                                 printf("\nSort by:\n");
                                 printf("[1] - Subject Name\n");
                                 printf("[2] - XP Earned\n");
@@ -135,16 +151,19 @@ int main() {
                                 scanf("%d", &sortChoice);
 
                                 if (sortChoice == 1) {
+                                    // extract subject names then sort alphabetically
                                     extractSubjectNames(records, recordCount, subjectNames);
                                     selectionSortBySubject(records, recordCount, subjectNames);
                                 }
                                 else if (sortChoice == 2)
+                                    // sort by XP descending
                                     selectionSortByXP(records, recordCount);
                                 else
                                     printf("\nInvalid input, please try again.\n\n");
                                 break;
 
                             case 8:
+                                // sort first then binary search by subject
                                 extractSubjectNames(records, recordCount, subjectNames);
                                 selectionSortBySubject(records, recordCount, subjectNames);
                                 printf("Enter Subject to search: ");
@@ -158,27 +177,33 @@ int main() {
                                 break;
 
                             case 9:
+                                // show all accounts to admin
                                 acc_list(users, userCount, ROLE_ADMIN);
                                 break;
 
-                             case 10:
-                                 acc_list(users, userCount, ROLE_ADMIN);
-                                 printf("Enter User ID to reset password: ");
-                                 scanf("%d", &resetIndex);
-                                 resetFound = 0;
-                                 for (int i = 0; i < userCount; i++) {
-                                     if (users[i].userID == resetIndex) {
-                                         reset_password(users, userCount, i, ADMIN_KEY);
-                                         saveUsers(users, userCount);
-                                         resetFound = 1;
-                                         break;
-                                     }
-                                 }
-                                 if (resetFound == 0)
-                                     printf("\nUser ID %d not found.\n\n", resetIndex);
-                                 break;
+                            case 10:
+                                // show accounts then prompt for user ID to reset
+                                acc_list(users, userCount, ROLE_ADMIN);
+                                printf("Enter User ID to reset password: ");
+                                scanf("%d", &resetIndex);
+                                resetFound = 0;  // reset flag before searching
+
+                                // find array index matching the entered user ID
+                                for (int i = 0; i < userCount; i++) {
+                                    if (users[i].userID == resetIndex) {
+                                        reset_password(users, userCount, i, ADMIN_KEY);
+                                        saveUsers(users, userCount);
+                                        resetFound = 1;
+                                        break;
+                                    }
+                                }
+
+                                if (resetFound == 0)
+                                    printf("\nUser ID %d not found.\n\n", resetIndex);
+                                break;
 
                             case 11:
+                                // sign out and reset logged in index
                                 printf("\nSigning out...\n\n");
                                 loggedInIndex = -1;
                                 break;
@@ -187,6 +212,7 @@ int main() {
                                 break;
                         }
 
+                        // ask to go back to admin menu after each action
                         if (menuChoice != 11) {
                             do {
                                 printf("Go back to Admin Menu? Y/N ");
@@ -206,8 +232,9 @@ int main() {
 
                 }
 
+                // student menu
                 else if (users[loggedInIndex].role == ROLE_STUDENT) {
-                    backChoice = 'n';
+                    backChoice = 'n';  // reset backChoice before entering menu
                     do {
                         printf("\n=== Student Menu ===\n");
                         printf("[1] - Add Study Record\n");
@@ -227,25 +254,30 @@ int main() {
 
                         switch (menuChoice) {
 
-                            case 1:
+ case 1:
+                                // add a new record and save immediately
                                 addRecord(records, &recordCount, users, loggedInIndex);
                                 saveRecords(records, recordCount);
                                 break;
 
                             case 2:
+                                // show only this student's own records
                                 listRecords(records, recordCount, ROLE_STUDENT, users[loggedInIndex].username);
                                 break;
 
                             case 3:
+                                // build and display leaderboard for student
                                 buildLeaderboard(users, userCount, records, recordCount, leaderboard, &leaderboardCount);
                                 displayLeaderboard(leaderboard, leaderboardCount, ROLE_STUDENT);
                                 break;
 
                             case 4:
+                                // show statistics for this student only
                                 calculateStats(records, recordCount, users[loggedInIndex].username, &totalHours, &avgHours, &totalXP);
                                 break;
 
                             case 5:
+                                // sort first then binary search by subject
                                 extractSubjectNames(records, recordCount, subjectNames);
                                 selectionSortBySubject(records, recordCount, subjectNames);
                                 printf("Enter Subject to search: ");
@@ -259,11 +291,13 @@ int main() {
                                 break;
 
                             case 6:
+                                // student resets own password using admin key
                                 reset_password(users, userCount, loggedInIndex, ADMIN_KEY);
                                 saveUsers(users, userCount);
                                 break;
 
                             case 7:
+                                // sign out and reset logged in index
                                 printf("\nSigning out...\n\n");
                                 loggedInIndex = -1;
                                 break;
@@ -272,6 +306,7 @@ int main() {
                                 break;
                         }
 
+                        // ask to go back to student menu after each action
                         if (menuChoice != 7) {
                             do {
                                 printf("Go back to Student Menu? Y/N ");
@@ -294,12 +329,13 @@ int main() {
                 break;
 
             case 2:
+                // create a new account and save immediately
                 create_acc(users, &userCount);
                 saveUsers(users, userCount);
                 break;
 
             case 3:
-                backChoice = 'n';
+                backChoice = 'n';  // reset backChoice before entering menu
                 do {
                     printf("\n=== Guest Menu ===\n");
                     printf("[1] - View All Records\n");
@@ -317,15 +353,18 @@ int main() {
                     switch (menuChoice) {
 
                         case 1:
+                            // show all records to guest with limited details
                             listRecords(records, recordCount, ROLE_GUEST, NULL);
                             break;
 
                         case 2:
+                            // build and display leaderboard for guest
                             buildLeaderboard(users, userCount, records, recordCount, leaderboard, &leaderboardCount);
                             displayLeaderboard(leaderboard, leaderboardCount, ROLE_GUEST);
                             break;
 
                         case 3:
+                            // sort first then binary search by subject
                             extractSubjectNames(records, recordCount, subjectNames);
                             selectionSortBySubject(records, recordCount, subjectNames);
                             printf("Enter Subject to search: ");
@@ -339,6 +378,7 @@ int main() {
                             break;
 
                         case 4:
+                            // exit guest mode
                             printf("\nExiting Guest Mode...\n\n");
                             break;
 
@@ -346,6 +386,7 @@ int main() {
                             break;
                     }
 
+                    // ask to go back to guest menu after each action
                     if (menuChoice != 4) {
                         do {
                             printf("Go back to Guest Menu? Y/N ");
@@ -366,6 +407,7 @@ int main() {
                 break;
 
             case 4:
+                // save all data before exiting
                 saveUsers(users, userCount);
                 saveRecords(records, recordCount);
                 printf("\nExiting program...\n\n");
@@ -375,6 +417,7 @@ int main() {
                 break;
         }
 
+        // ask to go back to main menu after each action
         if (choice != 4) {
             do {
                 printf("Go back to Main Menu? Y/N ");
