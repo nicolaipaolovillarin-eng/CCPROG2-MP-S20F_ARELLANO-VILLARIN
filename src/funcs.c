@@ -416,6 +416,23 @@ int reset_password(UserAccount users[], int userCount, int userIndex,
     return 1;
 }
 
+/*
+
+    @name   addRecord()
+
+    @brief  Prompts the logged in user to enter a new study
+            record including subject name, hours studied, and
+            date. XP is calculated automatically based on
+            hours studied using the tiered XP system.
+            Record ID is assigned based on current record count
+            and owner username is set from the logged in user
+
+    @param  records         Array of StudyRecord structs
+    @param  recordCount     Pointer to the number of records
+    @param  users           Array of UserAccount structs
+    @param  loggedInIndex   Index of the logged in user
+
+*/
 void addRecord(StudyRecord records[], int *recordCount, UserAccount users[],
                int loggedInIndex) {
 
