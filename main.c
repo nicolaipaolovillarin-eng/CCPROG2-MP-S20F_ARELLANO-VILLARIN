@@ -111,7 +111,18 @@ int main() {
                                 if(sesh_choice != 1 && sesh_choice != 2 && sesh_choice != 3)
                                     printf("Invalid input, please try again.");
 
-                            } while(sesh_choice != 1 && sesh_choice != 2 && sesh_choice != 3); 
+                                do {
+                                    printf("Do you want to go back to the user menu? Y/N ");
+                                    scanf(" %c", &bool_choice);
+
+                                    if(bool_choice != 'Y' && bool_choice != 'y' && bool_choice != 'n' && bool_choice != 'N')
+                                        printf("Invalid input, please try again.\n\n");
+                                        
+                                } while(bool_choice != 'Y' && bool_choice != 'y' && bool_choice != 'n' && bool_choice != 'N');
+                                
+                                system("cls");
+
+                            } while(sesh_choice != 1 && sesh_choice != 2 && sesh_choice != 3 || bool_choice == 'y' || bool_choice == 'Y'); 
 
                             break;
 
@@ -130,7 +141,7 @@ int main() {
             }
             
             do {
-                printf("Do you want to go back to the menu? Y/N ");
+                printf("Do you want to go back to the main menu? Y/N ");
                 scanf(" %c", &bool_choice);
 
                 if(bool_choice != 'Y' && bool_choice != 'y' && bool_choice != 'n' && bool_choice != 'N')
@@ -144,7 +155,7 @@ int main() {
         else //else statement if user chooses to exit program
             printf("\nExiting program...\n\n");
         
-    } while(bool_choice == 'y' || bool_choice == 'Y'&& choice != max_choice);
+    } while(bool_choice == 'y' || bool_choice == 'Y' && choice != max_choice);
 
     return 0;
 
